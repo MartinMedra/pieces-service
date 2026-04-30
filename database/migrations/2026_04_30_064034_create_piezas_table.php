@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bloques', function (Blueprint $tabla) {
+        Schema::create('piezas', function (Blueprint $tabla) {
             $tabla->id();
-            $tabla->foreignId('proyecto_id')
-                  ->constrained('proyectos')
-                  ->onDelete('cascade'); // si se borra el proyecto, se borran sus bloques
+            $tabla->foreignId('bloque_id')
+                  ->constrained('bloques')
+                  ->onDelete('cascade');
             $tabla->string('nombre');
+            $tabla->string('codigo_pieza')->unique();
             $tabla->text('descripcion')->nullable();
-            $tabla->string('codigo_bloque')->unique();
+            $tabla->decimal('peso_teorico', 10, 3); //para guardar los kg con 3 decimales
             $tabla->timestamps();
             $tabla->softDeletes();
         });
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bloques');
+        Schema::dropIfExists('piezas');
     }
 };
