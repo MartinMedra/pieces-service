@@ -40,10 +40,10 @@ class ProyectoController extends Controller
     public function store(Request $request)
     {
         $datosValidados = $request->validate([
-            'nombre'          => ['required', 'string', 'max:255'],
-            'descripcion'     => ['nullable', 'string'],
-            'codigo_proyecto' => ['required', 'string', 'unique:proyectos,codigo_proyecto'],
-            'estado'          => ['sometimes', 'in:activo,inactivo'],
+            'nombre'          => 'required|string|max:255',
+            'descripcion'     => 'nullable|string',
+            'codigo_proyecto' => 'required|string|unique:proyectos,codigo_proyecto',
+            'estado'          => 'sometimes|in:activo,inactivo',
         ]);
 
         $proyecto = Proyecto::create($datosValidados);
@@ -70,10 +70,10 @@ class ProyectoController extends Controller
     public function update(Request $request, Proyecto $proyecto)
     {
         $datosValidados = $request->validate([
-            'nombre'          => ['sometimes', 'string', 'max:255'],
-            'descripcion'     => ['nullable', 'string'],
-            'codigo_proyecto' => ['sometimes', 'string', 'unique:proyectos,codigo_proyecto,' . $proyecto->id],
-            'estado'          => ['sometimes', 'in:activo,inactivo'],
+            'nombre'          => 'sometimes|string|max:255',
+            'descripcion'     => 'nullable|string',
+            'codigo_proyecto' => 'sometimes|string|unique:proyectos,codigo_proyecto,' . $proyecto->id,
+            'estado'          => 'sometimes|in:activo,inactivo',
         ]);
 
         $proyecto->update($datosValidados);
