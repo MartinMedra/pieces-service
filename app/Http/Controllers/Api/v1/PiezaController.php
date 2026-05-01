@@ -33,7 +33,7 @@ class PiezaController extends Controller
     {
         $datosValidados = $request->validate([
             'nombre'       => 'required|string|max:255',
-            'codigo_pieza' => 'required|string|unique:piezas,codigo_pieza,',
+            'codigo_pieza' => 'required|string|unique:piezas,codigo_pieza',
             'descripcion'  => 'nullable|string',
             'peso_teorico' => 'required|numeric|min:0.001',
         ]);
