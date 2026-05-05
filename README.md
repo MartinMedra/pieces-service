@@ -11,8 +11,9 @@ Microservicio de gestión de producción construido con **Laravel 11**. Administ
 | Framework | Laravel 11 |
 | Lenguaje | PHP 8.4 |
 | Autenticación | JWT (validación local con `php-open-source-saver/jwt-auth`) |
-| Base de datos | PostgreSQL |
+| Base de datos | PostgreSQL 16 |
 | ORM | Eloquent + Migraciones + SoftDeletes |
+| Contenedores | Docker |
 
 ---
 
@@ -29,28 +30,26 @@ El campo `diferencia_peso` en `registros_fabricacion` es una **columna generada 
 
 ---
 
-## Variables de entorno
+## Levantar con Docker (recomendado)
 
-```env
-APP_NAME=PiecesService
-APP_URL=http://localhost:8002
+Este servicio forma parte de una arquitectura orquestada desde el repositorio del Frontend. Para correr el proyecto completo con un solo comando:
 
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=pieces_db
-DB_USERNAME=postgres
-DB_PASSWORD=tu_password
+```bash
+# 1. Clonar el repositorio del frontend (contiene el docker-compose.yml)
+git clone https://github.com/MartinMedra/gestion-frontend.git
+cd gestion-frontend
 
-JWT_SECRET=   # debe ser el mismo valor que en el Auth Service
-JWT_TTL=60
+# 2. Levantar todos los servicios
+docker compose up --build
 ```
 
-> ⚠️ `JWT_SECRET` tiene que coincidir exactamente con el del Auth Service. Es lo que permite que este servicio valide tokens sin hacer ninguna llamada HTTP al Auth Service.
+El Pieces Service quedará disponible en `http://localhost:8002`.
+
+> El `docker-compose.yml` levanta automáticamente: Auth Service, Pieces Service, Frontend y las dos bases de datos PostgreSQL. No se requiere instalar PHP, Composer ni PostgreSQL de forma local.
 
 ---
 
-## Pasos de ejecución
+## Ejecución local (sin Docker)
 
 **Requisitos previos:** PHP 8.4, Composer, PostgreSQL con la base de datos `pieces_db` creada.
 
@@ -76,9 +75,30 @@ php artisan serve --port=8002
 
 ---
 
+## Variables de entorno
+
+```env
+APP_NAME=PiecesService
+APP_URL=http://localhost:8002
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=pieces_db
+DB_USERNAME=postgres
+DB_PASSWORD=tu_password
+
+JWT_SECRET=   # debe ser el mismo valor que en el Auth Service
+JWT_TTL=60
+```
+
+> ⚠️ `JWT_SECRET` tiene que coincidir exactamente con el del Auth Service. Es lo que permite que este servicio valide tokens sin hacer ninguna llamada HTTP al Auth Service.
+
+---
+
 ## Autenticación
 
-Todas las rutas requieren el header:
+Todas las rutas requieren los headers:
 
 ```
 Authorization: Bearer <token>
@@ -86,6 +106,8 @@ Accept: application/json
 ```
 
 El token se obtiene desde el Auth Service (`POST http://localhost:8001/api/login`). Este servicio lo valida con la misma clave secreta compartida, sin red ni base de datos adicional.
+
+> ⚠️ El header `Accept: application/json` es obligatorio. Sin él, Laravel responde con redirecciones HTML en vez de JSON cuando ocurre un error de autenticación.
 
 Errores posibles:
 
@@ -213,3 +235,4 @@ POST /api/v1/piezas/1/registros
 - **Registros de fabricación sin DELETE**: un registro de producción es un hecho histórico. Solo puede actualizarse su estado u observaciones.
 - **`peso_teorico` copiado al registro**: se guarda el peso teórico vigente al momento del registro. Si la pieza se modifica después, el registro histórico conserva el valor original.
 - **Versionado `/api/v1`**: permite evolucionar la API sin romper integraciones existentes.
+- **CORS configurado en `bootstrap/app.php`**: Laravel 11 eliminó el archivo `config/cors.php` — la configuración vive directamente en el pipeline de middleware de la aplicación.
